@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>اختبار العربية | أولى بكالوريا</title>
+<title>اختبارات أولى بكالوريا | سبتمبر</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff,#f8fafc);color:#172033}
 .container{width:min(900px,92%);margin:auto}.screen{min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -26,19 +26,23 @@ button:hover{filter:brightness(.95)}.secondary{background:#e2e8f0;color:#172033}
 
 <section id="loginScreen" class="screen">
   <div class="card login">
-    <div class="badge">أولى بكالوريا مصر</div>
-    <h1>اختبار اللغة العربية</h1>
-    <p class="sub">اختبار تجريبي — 15 دقيقة</p>
+    <div class="badge">أولى بكالوريا مصر — اختبار سبتمبر</div>
+    <h1>اختر المادة</h1>
+    <p class="sub">اختبارات تجريبية — 20 سؤالًا — 15 دقيقة</p>
     <input id="studentName" type="text" placeholder="اكتب اسمك">
     <input id="studentCode" type="text" placeholder="كود الطالب (اختياري)">
-    <button onclick="startQuiz()">ابدأ الاختبار</button>
+    <div style="display:grid;gap:12px;margin-top:14px">
+      <button onclick="startQuiz('arabic')">📝 اختبار اللغة العربية</button>
+      <button onclick="startQuiz('philosophy')" class="secondary">🧠 اختبار الفلسفة والمنطق</button>
+    </div>
+    <p class="sub" style="margin-top:16px;font-size:13px">الفلسفة والمنطق: مقرر سبتمبر الظاهر في جدولك.</p>
   </div>
 </section>
 
 <section id="quizScreen" class="hidden">
   <header class="top">
     <div class="container bar">
-      <div><strong>اختبار اللغة العربية</strong><div id="welcome"></div></div>
+      <div><strong id="quizTitle">اختبار اللغة العربية</strong><div id="welcome"></div></div>
       <div class="timer" id="timer">15:00</div>
     </div>
     <div class="container progress"><div class="fill" id="fill"></div></div>
@@ -71,7 +75,7 @@ button:hover{filter:brightness(.95)}.secondary{background:#e2e8f0;color:#172033}
 </section>
 
 <script>
-const questions = [
+const arabicQuestions = [
  {q:"في نص «شباب تسامى للعمل وكهول» تدور الفكرة الأساسية حول:", a:["الدعوة إلى الكسل","تمجيد العمل والعطاء","وصف الطبيعة فقط","الحث على السفر"], c:1},
  {q:"الشعر في العصر الجاهلي يُعد من أهم مصادر معرفة:", a:["حياة العرب وقيمهم","العلوم الحديثة","التقنيات الرقمية","الجغرافيا الأوروبية"], c:0},
  {q:"من أبرز أغراض الشعر الجاهلي:", a:["المدح والفخر","البرمجة","التقرير العلمي","الإعلان التجاري"], c:0},
@@ -92,16 +96,43 @@ const questions = [
  {q:"ما العلاقة بين كلمتي «الليل» و«النهار»؟", a:["ترادف","طباق","جناس","تشبيه"], c:1},
  {q:"في «العالِم بحرٌ في المعرفة» الصورة البلاغية:", a:["تشبيه بليغ","استفهام","كناية","طباق"], c:0},
  {q:"من القيم التي تظهر في الدعوة إلى العمل:", a:["الإيجابية وتحمل المسؤولية","الكسل","إضاعة الوقت","الابتعاد عن المجتمع"], c:0}
+
+const philosophyQuestions = [
+ {q:"يُقصد بالتفكير الإنساني أنه:", a:["مجرد حفظ للمعلومات","عملية عقلية راقية تساعد الإنسان على حل المشكلات وتفسير المواقف","نشاط جسدي فقط","تكرار ما يقوله الآخرون"], c:1},
+ {q:"من أمثلة أهمية التفكير الإنساني:", a:["حل المشكلات والتخطيط للمستقبل","إلغاء الخبرات السابقة","تجنب التحليل","الاعتماد على الشائعات"], c:0},
+ {q:"أي موقف يمثل أسلوب التفكير الخرافي؟", a:["تفسير ظاهرة بأسباب قابلة للتجربة","ربط حدوث أمر بالتميمة أو الحظ دون دليل","البحث عن أسباب عقلية","الاستناد إلى تجربة علمية"], c:1},
+ {q:"من خصائص التفكير العلمي أنه يعتمد على:", a:["الخرافة","الأسباب القريبة والملاحظة والتجربة","الانفعال فقط","الشائعات"], c:1},
+ {q:"التفكير الفلسفي يهتم غالبًا بالبحث عن:", a:["الأسباب العميقة والكلية للظواهر","توقع الحظ","الأخبار المتداولة فقط","حفظ القوانين دون فهم"], c:0},
+ {q:"من مهارات التفكير الناقد:", a:["فحص الأدلة والحجج قبل قبولها","تصديق كل ما نسمعه","الاعتماد على العاطفة وحدها","رفض أي دليل"], c:0},
+ {q:"من مهارات التفكير الإبداعي:", a:["الطلاقة والمرونة والأصالة","الحفظ والتكرار فقط","رفض الأفكار الجديدة","اتباع المألوف دائمًا"], c:0},
+ {q:"الفلسفة والعلم يختلفان أساسًا في أن الفلسفة تميل إلى:", a:["دراسة موضوعات كلية مجردة","دراسة عينات مادية فقط","إجراء التجارب المعملية فقط","تسجيل النتائج دون تساؤل"], c:0},
+ {q:"من أمثلة تطبيق التفكير الفلسفي:", a:["طرح سؤال عام وتحليله ونقد الآراء حوله","تصديق الشائعة فورًا","الاعتماد على الحظ","رفض الحوار"], c:0},
+ {q:"التفكير الفلسفي يتميز بـ:", a:["التأمل والنقد وطرح الأسئلة","رفض التساؤل","تصديق المألوف دائمًا","الاعتماد على الخرافة"], c:0},
+ {q:"علم المنطق يهتم أساسًا بـ:", a:["تمييز التفكير الصحيح من التفكير الفاسد","دراسة الظواهر الطبيعية فقط","حفظ القصائد","دراسة التاريخ فقط"], c:0},
+ {q:"من أهمية المنطق:", a:["التمييز بين الأدلة السليمة وغير السليمة","زيادة تأثير الشائعات","الاعتماد على الانفعال","إلغاء الحوار"], c:0},
+ {q:"الحد المنطقي هو:", a:["لفظ يدل على معنى يمكن أن يكون طرفًا في قضية","جملة طويلة دائمًا","سؤال فقط","رأي شخصي بلا معنى"], c:0},
+ {q:"في القضية «الطالب مجتهد» يكون «الطالب» هو:", a:["المحمول","الموضوع","الرابطة","السور"], c:1},
+ {q:"في القضية «الطالب مجتهد» يكون «مجتهد» هو:", a:["الموضوع","المحمول","الرابطة","السور"], c:1},
+ {q:"الرابطة في القضية المنطقية وظيفتها:", a:["تحديد العلاقة بين الموضوع والمحمول","تحديد عدد أفراد الموضوع فقط","إلغاء المحمول","تغيير الموضوع"], c:0},
+ {q:"الرابطة الموجبة تفيد:", a:["الاتصال بين الموضوع والمحمول","الانفصال بين الموضوع والمحمول","حذف الموضوع","حذف المحمول"], c:0},
+ {q:"الرابطة السالبة تفيد:", a:["الاتصال","الانفصال بين الموضوع والمحمول","التكرار","التشبيه"], c:1},
+ {q:"في «الحديد هو معدن» الرابطة:", a:["موجبة","سالبة","استفهامية","شرطية"], c:0},
+ {q:"في «الحديد ليس هو نباتًا» الرابطة:", a:["موجبة","سالبة","مخفية بلا معنى","لا توجد قضية"], c:1}
 ];
 
-let endTime, timerInterval, submitted=false;
+let endTime, timerInterval, submitted=false, questions=[], selectedSubject="arabic";
 
-function startQuiz(){
+function startQuiz(subject){
  const name=document.getElementById('studentName').value.trim();
  if(!name){alert("اكتب اسمك أولًا");return;}
+ selectedSubject=subject;
+ questions = subject==="philosophy" ? philosophyQuestions : arabicQuestions;
  document.getElementById('loginScreen').classList.add('hidden');
  document.getElementById('quizScreen').classList.remove('hidden');
+ document.getElementById('quizTitle').textContent =
+   subject==="philosophy" ? "اختبار الفلسفة والمنطق" : "اختبار اللغة العربية";
  document.getElementById('welcome').textContent="مرحبًا "+name;
+ document.getElementById('answered').textContent=`0 / ${questions.length} مجاب`;
  renderQuestions();
  endTime=Date.now()+15*60*1000;
  timerInterval=setInterval(updateTimer,250);
