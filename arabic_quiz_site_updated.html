@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>اختبارات أولى بكالوريا | سبتمبر</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#eef2ff,#f8fafc);color:#172033}
+.container{width:min(900px,92%);margin:auto}.screen{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;border-radius:24px;padding:28px;box-shadow:0 15px 45px #1e293b18}.login{max-width:480px;width:100%;text-align:center}
+h1{margin:8px 0 10px;font-size:32px}.sub{color:#64748b;margin-bottom:25px}
+input{width:100%;padding:15px;border:1px solid #dbe2ea;border-radius:12px;font-size:16px;margin:8px 0}
+button{border:0;border-radius:12px;padding:14px 20px;font-size:16px;font-weight:bold;cursor:pointer;background:#4f46e5;color:#fff}
+button:hover{filter:brightness(.95)}.secondary{background:#e2e8f0;color:#172033}
+.hidden{display:none}.top{padding:18px 0;position:sticky;top:0;background:#f8fafcf2;backdrop-filter:blur(8px);z-index:2}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px}.timer{font-size:22px;font-weight:bold;color:#dc2626;background:#fee2e2;padding:10px 16px;border-radius:12px}
+.progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:12px}.fill{height:100%;width:0;background:#4f46e5;transition:.2s}
+.quiz{padding:28px 0 50px}.qcard{margin-bottom:18px}.qnum{color:#4f46e5;font-weight:bold}.question{font-size:21px;font-weight:bold;line-height:1.7;margin:8px 0 20px}
+.option{display:block;border:1px solid #dbe2ea;padding:14px;border-radius:12px;margin:10px 0;cursor:pointer;transition:.15s}.option:hover{background:#eef2ff}.option input{width:auto;margin-left:8px}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.result{text-align:center}.score{font-size:54px;font-weight:bold;color:#4f46e5;margin:15px}
+.badge{display:inline-block;background:#eef2ff;color:#4338ca;padding:8px 12px;border-radius:99px}
+@media(max-width:600px){h1{font-size:26px}.question{font-size:18px}.bar{align-items:flex-start;flex-direction:column}.timer{font-size:19px}}
+</style>
+</head>
+<body>
+
+<section id="loginScreen" class="screen">
+  <div class="card login">
+    <div class="badge">أولى بكالوريا مصر — اختبار سبتمبر</div>
+    <h1>اختر المادة</h1>
+    <p class="sub">اختبارات تجريبية — 20 سؤالًا — 15 دقيقة</p>
+    <input id="studentName" type="text" placeholder="اكتب اسمك">
+    <input id="studentCode" type="text" placeholder="كود الطالب (اختياري)">
+    <div style="display:grid;gap:12px;margin-top:14px">
+      <button onclick="startQuiz('arabic')">📝 اختبار اللغة العربية</button>
+      <button onclick="startQuiz('philosophy')" class="secondary">🧠 اختبار الفلسفة والمنطق</button>
+    </div>
+    <p class="sub" style="margin-top:16px;font-size:13px">الفلسفة والمنطق: مقرر سبتمبر الظاهر في جدولك.</p>
+  </div>
+</section>
+
+<section id="quizScreen" class="hidden">
+  <header class="top">
+    <div class="container bar">
+      <div><strong id="quizTitle">اختبار اللغة العربية</strong><div id="welcome"></div></div>
+      <div class="timer" id="timer">15:00</div>
+    </div>
+    <div class="container progress"><div class="fill" id="fill"></div></div>
+  </header>
+  <main class="container quiz">
+    <div id="questions"></div>
+    <div class="actions">
+      <span id="answered">0 / 20 مجاب</span>
+      <button onclick="submitQuiz()">إنهاء الاختبار</button>
+    </div>
+  </main>
+</section>
+
+<section id="resultScreen" class="screen hidden">
+  <div class="container quiz">
+    <div class="card result">
+      <div class="badge">انتهى الاختبار</div>
+      <h1>نتيجة الطالب</h1>
+      <div class="score" id="score">0 / 20</div>
+      <p id="percentage"></p>
+      <p id="resultText"></p>
+      <div id="summary" style="margin:20px 0"></div>
+    </div>
+    <div id="review"></div>
+    <div class="actions">
+      <span></span>
+      <button onclick="location.reload()">اختبار جديد</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const arabicQuestions = [
+ {q:"في نص «شباب تسامى للعمل وكهول» تدور الفكرة الأساسية حول:", a:["الدعوة إلى الكسل","تمجيد العمل والعطاء","وصف الطبيعة فقط","الحث على السفر"], c:1},
+ {q:"الشعر في العصر الجاهلي يُعد من أهم مصادر معرفة:", a:["حياة العرب وقيمهم","العلوم الحديثة","التقنيات الرقمية","الجغرافيا الأوروبية"], c:0},
+ {q:"من أبرز أغراض الشعر الجاهلي:", a:["المدح والفخر","البرمجة","التقرير العلمي","الإعلان التجاري"], c:0},
+ {q:"في قولنا «رأيت أسدًا يحمل السيف في المعركة» إذا أُريد بالأسد الرجل الشجاع، فهذا استعمال:", a:["حقيقي","مجازي","علمي","حرفي"], c:1},
+ {q:"الحقيقة هي استعمال اللفظ في:", a:["غير ما وضع له","ما وضع له أصلًا","معنى مستحيل فقط","معنى مخالف للسياق دائمًا"], c:1},
+ {q:"«الجندي كالأسد في الشجاعة» نوع الصورة البلاغية:", a:["تشبيه مفرد","استعارة","كناية","طباق"], c:0},
+ {q:"في «العلم نور» الصورة البلاغية الأقرب هي:", a:["تشبيه مفرد بليغ","استفهام","نداء","جناس"], c:0},
+ {q:"أي الجمل الآتية تشتمل على تشبيه مفرد؟", a:["العلم كالنور","عاد الطالب","لا تهمل واجبك","ما أجمل الصدق"], c:0},
+ {q:"في «كان الطالبُ مجتهدًا» كلمة «كان» فعل:", a:["تام","ناقص","أمر","مضارع"], c:1},
+ {q:"في «أصبح الجوُّ معتدلًا» إعراب «معتدلًا» هو:", a:["اسم أصبح","خبر أصبح","فاعل","مفعول به"], c:1},
+ {q:"أي الأفعال الآتية من الأفعال الناقصة؟", a:["كان","كتب","جلس","قرأ"], c:0},
+ {q:"أي الجمل الآتية ورد فيها فعل تام؟", a:["باتَ الطفلُ ساهرًا","أصبحَ الجوُّ جميلًا","نامَ الطفلُ مبكرًا","كانَ الطالبُ مجتهدًا"], c:2},
+ {q:"من خصائص الشعر الجاهلي أنه ارتبط بـ:", a:["بيئة العرب وحياتهم","الحاسوب","المصانع الحديثة","الصحافة الرقمية"], c:0},
+ {q:"موضوع التعبير الوظيفي المقرر في سبتمبر هو:", a:["رسالة شخصية","إعلان","قصة قصيرة","مقال علمي"], c:1},
+ {q:"عند كتابة إعلان جيد، من المهم أن يكون:", a:["غامضًا وطويلًا","واضحًا ومحددًا","بلا معلومات","مليئًا بالأخطاء"], c:1},
+ {q:"أي الجمل الآتية تشتمل على فعل ناقص؟", a:["ظلَّ الطالبُ مجتهدًا","قرأَ الطالبُ الدرسَ","كتبَ الطالبُ الواجبَ","نجحَ الطالبُ"], c:0},
+ {q:"في جملة «صارَ الحقُّ واضحًا» كلمة «الحقُّ» هي:", a:["خبر صار","اسم صار","مفعول به","حال"], c:1},
+ {q:"ما العلاقة بين كلمتي «الليل» و«النهار»؟", a:["ترادف","طباق","جناس","تشبيه"], c:1},
+ {q:"في «العالِم بحرٌ في المعرفة» الصورة البلاغية:", a:["تشبيه بليغ","استفهام","كناية","طباق"], c:0},
+ {q:"من القيم التي تظهر في الدعوة إلى العمل:", a:["الإيجابية وتحمل المسؤولية","الكسل","إضاعة الوقت","الابتعاد عن المجتمع"], c:0}
+];
+
+const philosophyQuestions = [
+ {q:"يُقصد بالتفكير الإنساني أنه:", a:["مجرد حفظ للمعلومات","عملية عقلية راقية تساعد الإنسان على حل المشكلات وتفسير المواقف","نشاط جسدي فقط","تكرار ما يقوله الآخرون"], c:1},
+ {q:"من أمثلة أهمية التفكير الإنساني:", a:["حل المشكلات والتخطيط للمستقبل","إلغاء الخبرات السابقة","تجنب التحليل","الاعتماد على الشائعات"], c:0},
+ {q:"أي موقف يمثل أسلوب التفكير الخرافي؟", a:["تفسير ظاهرة بأسباب قابلة للتجربة","ربط حدوث أمر بالتميمة أو الحظ دون دليل","البحث عن أسباب عقلية","الاستناد إلى تجربة علمية"], c:1},
+ {q:"من خصائص التفكير العلمي أنه يعتمد على:", a:["الخرافة","الأسباب القريبة والملاحظة والتجربة","الانفعال فقط","الشائعات"], c:1},
+ {q:"التفكير الفلسفي يهتم غالبًا بالبحث عن:", a:["الأسباب العميقة والكلية للظواهر","توقع الحظ","الأخبار المتداولة فقط","حفظ القوانين دون فهم"], c:0},
+ {q:"من مهارات التفكير الناقد:", a:["فحص الأدلة والحجج قبل قبولها","تصديق كل ما نسمعه","الاعتماد على العاطفة وحدها","رفض أي دليل"], c:0},
+ {q:"من مهارات التفكير الإبداعي:", a:["الطلاقة والمرونة والأصالة","الحفظ والتكرار فقط","رفض الأفكار الجديدة","اتباع المألوف دائمًا"], c:0},
+ {q:"الفلسفة والعلم يختلفان أساسًا في أن الفلسفة تميل إلى:", a:["دراسة موضوعات كلية مجردة","دراسة عينات مادية فقط","إجراء التجارب المعملية فقط","تسجيل النتائج دون تساؤل"], c:0},
+ {q:"من أمثلة تطبيق التفكير الفلسفي:", a:["طرح سؤال عام وتحليله ونقد الآراء حوله","تصديق الشائعة فورًا","الاعتماد على الحظ","رفض الحوار"], c:0},
+ {q:"التفكير الفلسفي يتميز بـ:", a:["التأمل والنقد وطرح الأسئلة","رفض التساؤل","تصديق المألوف دائمًا","الاعتماد على الخرافة"], c:0},
+ {q:"علم المنطق يهتم أساسًا بـ:", a:["تمييز التفكير الصحيح من التفكير الفاسد","دراسة الظواهر الطبيعية فقط","حفظ القصائد","دراسة التاريخ فقط"], c:0},
+ {q:"من أهمية المنطق:", a:["التمييز بين الأدلة السليمة وغير السليمة","زيادة تأثير الشائعات","الاعتماد على الانفعال","إلغاء الحوار"], c:0},
+ {q:"الحد المنطقي هو:", a:["لفظ يدل على معنى يمكن أن يكون طرفًا في قضية","جملة طويلة دائمًا","سؤال فقط","رأي شخصي بلا معنى"], c:0},
+ {q:"في القضية «الطالب مجتهد» يكون «الطالب» هو:", a:["المحمول","الموضوع","الرابطة","السور"], c:1},
+ {q:"في القضية «الطالب مجتهد» يكون «مجتهد» هو:", a:["الموضوع","المحمول","الرابطة","السور"], c:1},
+ {q:"الرابطة في القضية المنطقية وظيفتها:", a:["تحديد العلاقة بين الموضوع والمحمول","تحديد عدد أفراد الموضوع فقط","إلغاء المحمول","تغيير الموضوع"], c:0},
+ {q:"الرابطة الموجبة تفيد:", a:["الاتصال بين الموضوع والمحمول","الانفصال بين الموضوع والمحمول","حذف الموضوع","حذف المحمول"], c:0},
+ {q:"الرابطة السالبة تفيد:", a:["الاتصال","الانفصال بين الموضوع والمحمول","التكرار","التشبيه"], c:1},
+ {q:"في «الحديد هو معدن» الرابطة:", a:["موجبة","سالبة","استفهامية","شرطية"], c:0},
+ {q:"في «الحديد ليس هو نباتًا» الرابطة:", a:["موجبة","سالبة","مخفية بلا معنى","لا توجد قضية"], c:1}
+];
+
+let endTime, timerInterval, submitted=false, questions=[], selectedSubject="arabic";
+
+function startQuiz(subject){
+ const name=document.getElementById('studentName').value.trim();
+ if(!name){alert("اكتب اسمك أولًا");return;}
+ selectedSubject=subject;
+ questions = subject==="philosophy" ? philosophyQuestions : arabicQuestions;
+ document.getElementById('loginScreen').classList.add('hidden');
+ document.getElementById('quizScreen').classList.remove('hidden');
+ document.getElementById('quizTitle').textContent =
+   subject==="philosophy" ? "اختبار الفلسفة والمنطق" : "اختبار اللغة العربية";
+ document.getElementById('welcome').textContent="مرحبًا "+name;
+ document.getElementById('answered').textContent=`0 / ${questions.length} مجاب`;
+ renderQuestions();
+ endTime=Date.now()+15*60*1000;
+ timerInterval=setInterval(updateTimer,250);
+ updateTimer();
+}
+function renderQuestions(){
+ const box=document.getElementById('questions');
+ box.innerHTML=questions.map((x,i)=>`
+ <div class="card qcard">
+  <div class="qnum">السؤال ${i+1} من ${questions.length}</div>
+  <div class="question">${x.q}</div>
+  ${x.a.map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}" onchange="updateProgress()"> ${o}</label>`).join("")}
+ </div>`).join("");
+}
+function updateProgress(){
+ let n=0;
+ questions.forEach((_,i)=>{if(document.querySelector(`input[name=q${i}]:checked`))n++;});
+ document.getElementById('answered').textContent=`${n} / ${questions.length} مجاب`;
+ document.getElementById('fill').style.width=(n/questions.length*100)+"%";
+}
+function updateTimer(){
+ const left=Math.max(0,endTime-Date.now());
+ const total=Math.floor(left/1000),m=Math.floor(total/60),s=total%60;
+ document.getElementById('timer').textContent=`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+ if(left<=0){clearInterval(timerInterval);submitQuiz(true);}
+}
+function submitQuiz(auto=false){
+ if(submitted)return;
+ if(!auto && !confirm("هل تريد إنهاء الاختبار الآن؟"))return;
+ submitted=true; clearInterval(timerInterval);
+ let score=0;
+ questions.forEach((x,i)=>{
+  const el=document.querySelector(`input[name=q${i}]:checked`);
+  if(el && Number(el.value)===x.c)score++;
+ });
+ document.getElementById('quizScreen').classList.add('hidden');
+ document.getElementById('resultScreen').classList.remove('hidden');
+ document.getElementById('score').textContent=`${score} / ${questions.length}`;
+ const wrong=questions.length-score;
+ const pct=Math.round(score/questions.length*100);
+ document.getElementById('percentage').innerHTML=`النسبة المئوية: <strong>${pct}%</strong>`;
+ document.getElementById('summary').innerHTML=
+   `<span class="badge">✅ إجابات صحيحة: ${score}</span>
+    <span class="badge" style="margin-right:8px">❌ إجابات خاطئة: ${wrong}</span>`;
+ document.getElementById('resultText').textContent=
+ pct>=80?"ممتاز جدًا! استمر على هذا المستوى 👏":
+ pct>=60?"أداء جيد، ومع مزيد من المراجعة ستتحسن أكثر 👍":
+ "محتاج مراجعة بسيطة، وحاول مرة أخرى 💪";
+
+ const review=document.getElementById('review');
+ review.innerHTML=questions.map((x,i)=>{
+   const el=document.querySelector(`input[name=q${i}]:checked`);
+   const chosen=el ? Number(el.value) : null;
+   const ok=chosen===x.c;
+   const student=chosen===null ? "لم تتم الإجابة" : x.a[chosen];
+   return `<div class="card qcard">
+     <div class="qnum">السؤال ${i+1} ${ok ? "✅ صحيح" : "❌ خطأ"}</div>
+     <div class="question">${x.q}</div>
+     <p><strong>إجابتك:</strong> ${student}</p>
+     <p><strong>الإجابة الصحيحة:</strong> ${x.a[x.c]}</p>
+   </div>`;
+ }).join("");
+}
+</script>
+</body>
+</html>
